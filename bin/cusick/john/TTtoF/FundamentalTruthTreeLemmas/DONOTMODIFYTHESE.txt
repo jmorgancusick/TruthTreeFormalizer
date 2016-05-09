@@ -1,0 +1,1 @@
+Don't modify these Fitch files. Don’t open them. Don’t even look at them. If you need to, copy them to a new location first.

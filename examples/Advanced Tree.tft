@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<Tree>
+    <BranchLine content="(P ∧ Q) ↔ R" index="0">
+        <Decomposition branchIndex="2"/>
+        <Decomposition lineIndex="9"/>
+        <Decomposition lineIndex="10"/>
+        <Decomposition lineIndex="14"/>
+        <Decomposition lineIndex="15"/>
+    </BranchLine>
+    <BranchLine content="A → (P ∧ Q)" index="1">
+        <Decomposition branchIndex="0"/>
+        <Decomposition lineIndex="4"/>
+        <Decomposition lineIndex="6"/>
+    </BranchLine>
+    <BranchLine content="A" index="2"/>
+    <BranchLine content="¬R" index="3"/>
+    <Branch index="0">
+        <Branch index="1">
+            <BranchLine content="¬A" index="4"/>
+            <Terminator index="5">
+                <Decomposition lineIndex="4"/>
+                <Decomposition lineIndex="2"/>
+            </Terminator>
+        </Branch>
+        <Branch index="1">
+            <BranchLine content="P ∧ Q" index="6">
+                <Decomposition lineIndex="7"/>
+                <Decomposition lineIndex="8"/>
+            </BranchLine>
+            <BranchLine content="P" index="7"/>
+            <BranchLine content="Q" index="8"/>
+            <Branch index="3">
+                <BranchLine content="P ∧ Q" index="9">
+                    <Decomposition lineIndex="11"/>
+                    <Decomposition lineIndex="12"/>
+                </BranchLine>
+                <BranchLine content="R" index="10"/>
+                <BranchLine content="P" index="11"/>
+                <BranchLine content="Q" index="12"/>
+                <Terminator index="13">
+                    <Decomposition lineIndex="10"/>
+                    <Decomposition lineIndex="3"/>
+                </Terminator>
+            </Branch>
+            <Branch index="3">
+                <BranchLine content="¬(P ∧ Q)" index="14">
+                    <Decomposition branchIndex="4"/>
+                    <Decomposition lineIndex="16"/>
+                    <Decomposition lineIndex="18"/>
+                </BranchLine>
+                <BranchLine content="¬R" index="15"/>
+                <Branch index="5">
+                    <BranchLine content="¬P" index="16"/>
+                    <Terminator index="17">
+                        <Decomposition lineIndex="16"/>
+                        <Decomposition lineIndex="7"/>
+                    </Terminator>
+                </Branch>
+                <Branch index="5">
+                    <BranchLine content="¬Q" index="18"/>
+                    <Terminator index="19">
+                        <Decomposition lineIndex="18"/>
+                        <Decomposition lineIndex="8"/>
+                    </Terminator>
+                </Branch>
+            </Branch>
+        </Branch>
+    </Branch>
+</Tree>
