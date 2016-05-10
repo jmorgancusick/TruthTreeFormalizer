@@ -118,8 +118,8 @@ public class FitchFileManager {
 		String line2 = assembleFitchOSLine();
 		//Fitch constant
 		String line3 = FITCH_LINE3_CONSTANT;
-		//Time stamps (leave empty)
-		String line4 = "";
+		//Time stamps (can't be empty on windows, just pull some other file's timestamp)
+		String line4 = "C1462893784184D1462893817578";
 		//Fitch file format
 		String line5 = FITCH_FILE_FORMAT;
 		
