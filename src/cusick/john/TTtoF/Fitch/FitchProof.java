@@ -26,16 +26,9 @@
  */ 
 
 package cusick.john.TTtoF.Fitch;
-import java.util.HashMap;
 import java.util.Vector;
 
-import perl.aaron.TruthTrees.Branch;
 import perl.aaron.TruthTrees.BranchLine;
-import perl.aaron.TruthTrees.logic.AtomicStatement;
-import perl.aaron.TruthTrees.logic.Biconditional;
-import perl.aaron.TruthTrees.logic.Conditional;
-import perl.aaron.TruthTrees.logic.Conjunction;
-import perl.aaron.TruthTrees.logic.Disjunction;
 import perl.aaron.TruthTrees.logic.Negation;
 import perl.aaron.TruthTrees.logic.Statement;
 
@@ -210,7 +203,7 @@ public class FitchProof {
 		
 		//set initial values 
 		Integer currSI = 13;
-		Vector<Integer> currSS = new Vector();
+		Vector<Integer> currSS = new Vector<Integer>();
 		currSS.add(0);
 		if(proof.size() > 0){ //this should always be true
 			proof.get(0).setFitchSI(currSI); /* 13 is the starting Fitch SI number */

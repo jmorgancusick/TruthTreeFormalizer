@@ -28,7 +28,6 @@
 package cusick.john.TTtoF.Fitch;
 import java.util.Vector;
 
-import perl.aaron.TruthTrees.BranchLine;
 import perl.aaron.TruthTrees.logic.Statement;
 
 public class ProofLine {

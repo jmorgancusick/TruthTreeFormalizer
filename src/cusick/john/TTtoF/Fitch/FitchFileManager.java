@@ -27,15 +27,10 @@
 
 package cusick.john.TTtoF.Fitch;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
-import java.nio.charset.Charset;
 import java.util.Scanner;
 import java.util.Stack;
 import java.util.Vector;
@@ -44,8 +39,6 @@ import java.util.regex.Pattern;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 import javax.swing.filechooser.FileNameExtensionFilter;
-
-import perl.aaron.TruthTrees.graphics.TreePanel;
 
 public class FitchFileManager {
 	private static final String EXTENSION = "prf";
@@ -301,8 +294,6 @@ public class FitchFileManager {
 		//open the proof, read in starting at the correct line/location (should all be the same)
 		//output to the new proof, close
 		Long runningCheckSum = (long) 0; //try to just use a constand runningCheckSum
-
-		InputStream fis;
 
 		//output lemma rule start
 		runningCheckSum += OutputAndAdd(writer, PROOF_STEP_INFO_R_LEMMA, true, closingString);
@@ -587,13 +578,5 @@ public class FitchFileManager {
 	
 	private static final String PROOF_GOAL = "g=openproof.proofdriver.DRGoalList{g()}";
 	private static final String PROOF_A = "a=true;";
-
-	//the checksums of all the lemmas, these can be stored because the lemmas are directly copied in
-	private static final Long PROOF_LEMMA_CHECKSUM_DEMORGAN1 = (long) 0;
-	private static final Long PROOF_LEMMA_CHECKSUM_DEMORGAN2 = (long) 0;
-	private static final Long PROOF_LEMMA_CHECKSUM_COND = (long) 1469568;
-	private static final Long PROOF_LEMMA_CHECKSUM_NEG_COND = (long) 0;
-	private static final Long PROOF_LEMMA_CHECKSUM_BICOND = (long) 2199660;
-	private static final Long PROOF_LEMMA_CHECKSUM_NEG_BICOND = (long) 0;
 	
 }

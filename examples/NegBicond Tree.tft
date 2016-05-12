@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<Tree>
+    <BranchLine content="¬(P ↔ Q)" index="0">
+        <Decomposition branchIndex="0"/>
+        <Decomposition lineIndex="3"/>
+        <Decomposition lineIndex="4"/>
+        <Decomposition lineIndex="6"/>
+        <Decomposition lineIndex="7"/>
+    </BranchLine>
+    <BranchLine content="P" index="1"/>
+    <BranchLine content="Q" index="2"/>
+    <Branch index="0">
+        <Branch index="1">
+            <BranchLine content="P" index="3"/>
+            <BranchLine content="¬Q" index="4"/>
+            <Terminator index="5">
+                <Decomposition lineIndex="4"/>
+                <Decomposition lineIndex="2"/>
+            </Terminator>
+        </Branch>
+        <Branch index="1">
+            <BranchLine content="¬P" index="6"/>
+            <BranchLine content="Q" index="7"/>
+            <Terminator index="8">
+                <Decomposition lineIndex="6"/>
+                <Decomposition lineIndex="1"/>
+            </Terminator>
+        </Branch>
+    </Branch>
+</Tree>

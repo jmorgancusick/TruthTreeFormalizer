@@ -27,18 +27,10 @@
 
 package cusick.john.TTtoF;
 
-import java.io.File;
-
-import javax.swing.JFileChooser;
-import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
-import cusick.john.TTtoF.Fitch.FitchFileManager;
-import cusick.john.TTtoF.Fitch.FitchProof;
 import cusick.john.TTtoF.graphics.ConverterPanel;
-import perl.aaron.TruthTrees.Branch;
-import perl.aaron.TruthTrees.TruthTreeFileManager;
 
 public class TruthTreeFormalizer {
 

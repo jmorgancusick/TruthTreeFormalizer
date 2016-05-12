@@ -29,10 +29,14 @@ import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.Vector;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
-import perl.aaron.TruthTrees.logic.*;
+import perl.aaron.TruthTrees.logic.AtomicStatement;
+import perl.aaron.TruthTrees.logic.Biconditional;
+import perl.aaron.TruthTrees.logic.Conditional;
+import perl.aaron.TruthTrees.logic.Conjunction;
+import perl.aaron.TruthTrees.logic.Disjunction;
+import perl.aaron.TruthTrees.logic.Negation;
+import perl.aaron.TruthTrees.logic.Statement;
 
 
 public class ExpressionParser {

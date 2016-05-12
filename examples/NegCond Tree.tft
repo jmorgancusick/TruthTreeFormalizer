@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<Tree>
+    <BranchLine content="¬(P → Q)" index="0">
+        <Decomposition lineIndex="3"/>
+        <Decomposition lineIndex="2"/>
+    </BranchLine>
+    <BranchLine content="¬P" index="1"/>
+    <Branch index="0">
+        <BranchLine content="P" index="2"/>
+        <BranchLine content="¬Q" index="3"/>
+        <Terminator index="4">
+            <Decomposition lineIndex="2"/>
+            <Decomposition lineIndex="1"/>
+        </Terminator>
+    </Branch>
+</Tree>

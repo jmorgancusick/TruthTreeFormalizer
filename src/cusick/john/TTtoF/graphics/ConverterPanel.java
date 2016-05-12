@@ -31,25 +31,38 @@
 
 package cusick.john.TTtoF.graphics;
 
-import java.io.*;
-import java.awt.*;
-import java.awt.event.*;
-import javax.swing.*;
-import javax.swing.SwingUtilities;
-import javax.swing.filechooser.*;
+import java.awt.BorderLayout;
+import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.File;
+
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JFileChooser;
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
 import cusick.john.TTtoF.Converter;
-import perl.aaron.TruthTrees.Branch;
-import perl.aaron.TruthTrees.TruthTreeFileManager;
 
-/*
- * FileChooserDemo.java uses these files:
+/**
+ * ConverterPanel.java uses these files:
  *   images/Open16.gif
  *   images/Save16.gif
+ *   images/Convert.gif
  */
 public class ConverterPanel extends JPanel
                              implements ActionListener {
 	
+
+	/**
+	 * generated serial version id to satisfy warning
+	 */
+	private static final long serialVersionUID = 3470483766196649684L;
 	private File ttFile = null;
 	private File fitchFile = null;
 	
@@ -79,7 +92,12 @@ public class ConverterPanel extends JPanel
 
         //Create a file chooser
         fc = new JFileChooser(){
-        	//override to make sure files not overwritten
+        	/**
+			 * generated serial version id to satisfy warning
+			 */
+			private static final long serialVersionUID = -4705685293050532853L;
+
+			//override to make sure files not overwritten
         	@Override
             public void approveSelection(){
                 File f = getSelectedFile();
