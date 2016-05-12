@@ -48,22 +48,39 @@ import perl.aaron.TruthTrees.logic.Disjunction;
 import perl.aaron.TruthTrees.logic.Negation;
 import perl.aaron.TruthTrees.logic.Statement;
 
+/**
+ * This class takes care of converting a truth tree in memory to a formal F proof in memory.
+ */
 public class Converter {
-	/*
-	 * Notes on how rootBranch works:
-	 * rootBranch is essentially the start of the proof AFTER the premises
-	 * 
+	//Notes on how rootBranch works: rootBranch is essentially the start of the proof AFTER the premises
+
+	/**
+	 * Set of branches that require lemmas, but have already been instantiated, used so that lemmas
+	 * aren't copied into a F proof more than once
 	 */
-	
 	private Set<BranchLine> instantiatedLemmas = new HashSet<BranchLine>();
+	
+	/**
+	 * Maps a Truth Tree Branch to it's parent BranchLine.
+	 */
 	private HashMap<Branch, BranchLine> branchDecompositionMap = new HashMap<Branch, BranchLine>();
+	
+	/**
+	 * Maps a Truth Tree's BranchLine to it's equivalent proof line. This is updated when lemmas are used,
+	 * and is utilized to construct support mappings in the F proof.
+	 */
 	private HashMap<BranchLine, ProofLine> referenceMap = new HashMap<BranchLine, ProofLine>();
 
-	//special map for biconds
-	// P <-> Q will point to {P & Q, ~P & ~Q}
+	/**
+	 * Special map for biconditionals, as they require x2 subproofs, and x4 and eliminations.
+	 * P <-> Q will point to {P & Q, ~P & ~Q}
+	 */
 	private HashMap<BranchLine, Vector<ProofLine>> bicondMap = new HashMap<BranchLine, Vector<ProofLine>>();
 	
-	
+	/**
+	 * Called at the start to quickly map all truth tree branches to their parent branchlines.
+	 * @param branch
+	 */
 	public void setBranchDecompositions(Branch branch){
 		for(int i = 0; i < branch.numLines(); i++){
 			//BranchLine decomposes into a branch
@@ -84,6 +101,10 @@ public class Converter {
 		}
 	}
 	
+	/** 
+	 * Recursive helper print for debugging, prints trees.
+	 * @param branch root branch to start print
+	 */
 	public void recursivePrint(Branch branch){
 		System.out.println("recursivePrintStart (branch counter)");
 		//print BranchLine things
@@ -103,16 +124,20 @@ public class Converter {
 		}
 	}
 	
-	
+	/**
+	 * Driver call to convert. Opens up the files and converts them in memory, and outputs the Fitch file
+	 * @param ttFile Input Truth Tree file
+	 * @param fitchFile Output Fitch file
+	 * @return formal F proof
+	 */
 	public FitchProof truthTreeToFitch(File ttFile, File fitchFile){
 		FitchProof formalProof = new FitchProof();
         
-		//get the truth tree into memory
-		
+		//(1) get the truth tree into memory
+		//Notes on how rootBranch works: rootBranch is essentially the start of the proof AFTER the premises
         Branch rootBranch = TruthTreeFileManager.loadFromFile(ttFile);
         
-        //TODO remove the empty premise
-        //rootBranch.getRoot().removeLine(0);;
+        
         
         
         setBranchDecompositions(rootBranch.getRoot());
@@ -130,15 +155,20 @@ public class Converter {
 		return formalProof;
 	}
 	
+	/** 
+	 * Transforms a Truth tree in memory to a formal F proof in memory
+	 * @param rootBranch input truth tree root branch
+	 * @param formalProof modifiable F proof (output)
+	 */
 	private void transformTreeToProof(Branch rootBranch, FitchProof formalProof){
-		Branch premises = rootBranch.getRoot(); 
+		Branch premises = rootBranch.getRoot(); 		
+		
 		/* Note: premises always starts with an empty statement (guessing this is a bug)
-		 * so the loop starts at i = 1
-		 * Also Note: add as premises all but the last line, because the last line 
-		 * is the negated conclusion
+		 * Also Note: add all but the last premise, because this is the negated conclusion 
 		 */
 		
-		//handle the truth tree bug where first premise is empty
+		//TODO monitor the Truth Tree software, if this bug is ever patched, this lines need to be deleted
+		//handle the truth tree bug where first premise is always empty
 		premises.removeLine(0);
 
 		int numPremises = premises.numLines();
@@ -184,6 +214,13 @@ public class Converter {
         
 	}
 	
+	/**
+	 * When a branch is encountered, insert the necessary lemma that lead to it.
+	 * This makes use of the branchDecompositionMap
+	 * @param branch 
+	 * @param formalProof
+	 * @return
+	 */
 	private int insertBranchLemma(Branch branch, FitchProof formalProof){
 		ProofLine pl = null;
 		ProofLine lemmaLine = null;
@@ -242,7 +279,13 @@ public class Converter {
 	}
 	
 
-	
+	/** 
+	 * Called on root branch after premises and negated conclusion have been established. 
+	 * This function handles the majority of the proof conversion.
+	 * @param branch
+	 * @param formalProof
+	 * @return status
+	 */
 	private int recursiveTreeTraversal(Branch branch, FitchProof formalProof){
 		//handle branch
 		System.out.println("*start recursiveTreeTraversal");
@@ -272,7 +315,7 @@ public class Converter {
 			//okay if you cant find branch line so long as referenceMap changed
 		}
 		else{
-			//TODO change location of insertBranchLemma, needs to be right before call
+			//needs to occur before recursive call, but after this branch's lines have been handled
 			System.out.println("call insert branch lemma");
 			insertBranchLemma(branch, formalProof);
 		}
@@ -311,15 +354,19 @@ public class Converter {
 	
 	//TODO make bicond, negbicond, demorgans 2, and negcond lemmas all taken care of
 	//	   in an "insertNonBranchingLemmaLine()" function instead of in this function 
-	
-	
-	//vector because some branch lines may require more than one proof lines
+
+	/**
+	 * Converts one truth tree BranchLine to it's equivalent F proof lines
+	 * @param bLine
+	 * @param formalProof
+	 * @return status
+	 */
 	public int branchLineToProofLine(BranchLine bLine, FitchProof formalProof) {
 		ProofLine pl = null;
 		
 		boolean bicondCase = false;
-		int bicondReferenceIndex = 0; //=0 for LHS decomp (positive P, Q for bicond, positive P neg Q for neg bicond)
-									//= 1 for RHS decomp (negative P, Q for bicond, neg P pos Q for neg bicond)
+		int bicondReferenceIndex = 0; //= 0 for LHS decomp (positive P, Q for bicond, positive P neg Q for neg bicond)
+									  //= 1 for RHS decomp (negative P, Q for bicond, neg P pos Q for neg bicond)
 		
 		//here is where we will check if lemmas need to be added
 		//this is the statement from which the current line was inferred
@@ -327,8 +374,9 @@ public class Converter {
 		
 		System.out.println("BRANCHTOLINE-bLine:"+bLine.getStatement().toString());
 		System.out.println("BRANCHTOLINE-parent: "+parentBranchLine.getStatement().toString());
-//		System.out.println("BRANCHTOLINE-parent-decomposed from: "+parentBranchLine.getDecomposedFrom().getStatement().toString());
-		//ALL OF THESE ASSUME PARENTAL LEMMAS HAVE ALREADY BEEN APPLIED
+		
+		//MOST OF THESE LEMMAS HAVE ALREADY BEEN APPLIED (all those that causing a branch)
+		//ANY LEMMAS THAT HAVE NOT BEEN APPLIED ARE CONJUNCTION LEMMAS AND HANDLED INSIDE THESE IFS
 		if(parentBranchLine.getStatement() instanceof Conjunction){
 			//no branch
 			pl = new ProofLine(bLine.getStatement(), formalProof, 0, FitchProof.RULE_CONJ_ELIM);
@@ -345,19 +393,15 @@ public class Converter {
 		}
 		else if(parentBranchLine.getStatement() instanceof Biconditional){
 			//Bicond, branch
-//			Disjunction parentEquivalentBiconditional = (Disjunction) getEquivalentBiconditional((Biconditional)bLine.getStatement());
-//			Statement operand1 = parentEquivalentBiconditional.getOperands().get(0);
-			
-			//TODO maybe, if parent biconditional, you have already handled the cases, so just treat
-			//it as if it was an and... thats probably the best way to treat it, but the question is
-			//where to handle earlier and how to determine if its the negation case or not
+
 			
 			bicondCase = true;
 			
 			Statement bicondLHS = ((Biconditional) parentBranchLine.getStatement()).getOperands().get(0); 
 			Statement bicondRHS = ((Biconditional) parentBranchLine.getStatement()).getOperands().get(1);
 			
-			//identify LHS or RHS
+			//identify if this branch is LHS(e.g., P & Q) or RHS (e.g. ~P & ~Q)
+			//LHS
 			if(bicondLHS.equals(bLine.getStatement()) || bicondRHS.equals(bLine.getStatement())){
 				if(bicondMap.containsKey(parentBranchLine) && bicondMap.get(parentBranchLine).get(0) != null){ // conjunction has already been made
 					//references handled below
@@ -375,6 +419,7 @@ public class Converter {
 				}
 				bicondReferenceIndex = 0;
 			}
+			//RHS
 			else if(bLine.getStatement().equals(new Negation(bicondLHS)) || bLine.getStatement().equals(new Negation(bicondRHS))){
 				if(bicondMap.containsKey(parentBranchLine) && bicondMap.get(parentBranchLine).get(1) != null){ // conjunction has already been made
 					//references handled below
@@ -473,7 +518,8 @@ public class Converter {
 				Statement bicondLHS = ((Biconditional) ((Negation) parentBranchLine.getStatement()).getNegand()).getOperands().get(0); 
 				Statement bicondRHS = ((Biconditional) ((Negation) parentBranchLine.getStatement()).getNegand()).getOperands().get(1);
 				
-				//identify LHS or RHS
+				//identify if this branch is LHS(e.g., ~P & Q) or RHS (e.g. P & ~Q)
+				//LHS
 				if(bLine.getStatement().equals(bicondLHS) || bLine.getStatement().equals(new Negation(bicondRHS))){
 					if(bicondMap.containsKey(parentBranchLine) && bicondMap.get(parentBranchLine).get(0) != null){ // conjunction has already been made
 						//references handled below
@@ -491,6 +537,7 @@ public class Converter {
 					}
 					bicondReferenceIndex = 0;
 				}
+				//RHS
 				else if(bLine.getStatement().equals(new Negation(bicondLHS)) || bLine.getStatement().equals(bicondRHS)){
 					if(bicondMap.containsKey(parentBranchLine) && bicondMap.get(parentBranchLine).get(1) != null){ // conjunction has already been made
 						//references handled below
@@ -516,7 +563,7 @@ public class Converter {
 			}
 		}
 		
-		//bicond case is handle differently
+		//bicond case handles references differently
 		if(pl.isStartofSubproof() == false && bicondCase == false){
 			pl.addReferencedLine(referenceMap.get(parentBranchLine));
 		}
@@ -527,8 +574,11 @@ public class Converter {
 		return 0;
 	}
 
-	
-	//negation already has been removed
+	/**
+	 * Retrieve the equivalent Demorgan1 statement ㄱ(P ∧ Q) ↔ (ㄱP ∨ ㄱQ)
+	 * @param statement Conjunction (i.e., LHS without the negation: P ∧ Q)
+	 * @return equivalent statement (i.e., RHS of the biconditional equality: ㄱP ∨ ㄱQ)
+	 */
 	private Statement getEquivalentDemorgan1(Conjunction statement) {
 		//ㄱ(P ∧ Q) ↔ (ㄱP ∨ ㄱQ)
 		Statement operand1 = statement.getOperands().get(0);
@@ -539,7 +589,11 @@ public class Converter {
 		return equivalentStatement;
 	}
 	
-	//negation already has been removed
+	/**
+	 * Retrieve the equivalent Demorgan2 statement ㄱ(P ∨ Q) ↔ (ㄱP ∧ ㄱQ)
+	 * @param statement Disjunction (i.e., LHS without the negation: P ∨ Q)
+	 * @return equivalent statement (i.e., RHS of the biconditional equality: ㄱP ∧ ㄱQ)
+	 */
 	private Statement getEquivalentDemorgan2(Disjunction statement) {
 		//ㄱ(P ∨ Q) ↔ (ㄱP ∧ ㄱQ)
 		Statement operand1 = statement.getOperands().get(0);
@@ -550,6 +604,11 @@ public class Converter {
 		return equivalentStatement;
 	}
 
+	/**
+	 * Retrieve the equivalent Conditional statement (P ➝ Q) ↔ (ㄱP ∨ Q)
+	 * @param statement Conditional (i.e., LHS of the biconditional equality: P ➝ Q)
+	 * @return equivalent statement (i.e., RHS of the biconditional equality: ㄱP ∨ Q)
+	 */
 	private Statement getEquivalentConditional(Conditional statement) {
 		//(P ➝ Q) ↔ (ㄱP ∨ Q)
 		Statement operand1 = statement.getOperands().get(0);
@@ -560,7 +619,11 @@ public class Converter {
 		return equivalentStatement;
 	}
 	
-	//negation already has been removed
+	/**
+	 * Retrieve the equivalent Neg Cond statement ㄱ(P ➝ Q) ↔ (P ∧ ㄱQ)
+	 * @param statement Conditional (i.e., LHS without the negation: P ➝ Q)
+	 * @return equivalent statement (i.e., RHS of the biconditional equality: P ∧ ㄱQ)
+	 */
 	private Statement getEquivalentNegatedConditional(Conditional statement) {
 		//ㄱ(P ➝ Q) ↔ (P ∧ ㄱQ)
 		Statement operand1 = statement.getOperands().get(0);
@@ -571,6 +634,11 @@ public class Converter {
 		return equivalentStatement;
 	}
 	
+	/**
+	 * Retrieve the equivalent Bicond statement (P ↔ Q) ↔ ((P ∧ Q) ∨ (ㄱP ∧ ㄱQ))
+	 * @param statement Biconditional (i.e., LHS of the biconditional equality: P ↔ Q)
+	 * @return equivalent statement (i.e., RHS of the biconditional equality: (P ∧ Q) ∨ (ㄱP ∧ ㄱQ))
+	 */
 	private Statement getEquivalentBiconditional(Biconditional statement) {
 		//(P ↔ Q) ↔ ((P ∧ Q) ∨ (ㄱP ∧ ㄱQ))
 		Statement operand1 = statement.getOperands().get(0);
@@ -581,7 +649,11 @@ public class Converter {
 		return equivalentStatement;
 	}
 	
-	//negation has already been removed
+	/**
+	 * Retrieve the equivalent Neg Bicond statement ㄱ(P ↔ Q) ↔ ((P ∧ ㄱQ) ∨ (ㄱP ∧ Q))
+	 * @param statement Biconditional (i.e., LHS without the negation: P ↔ Q)
+	 * @return equivalent statement (i.e., RHS of the biconditional equality: (P ∧ ㄱQ) ∨ (ㄱP ∧ Q))
+	 */
 	private Statement getEquivalentNegatedBiconditional(Biconditional statement) {
 		//ㄱ(P ↔ Q) ↔ ((P ∧ ㄱQ) ∨ (ㄱP ∧ Q))
 		Statement operand1 = statement.getOperands().get(0);

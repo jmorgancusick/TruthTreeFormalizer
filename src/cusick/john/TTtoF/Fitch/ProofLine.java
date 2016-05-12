@@ -30,19 +30,35 @@ import java.util.Vector;
 
 import perl.aaron.TruthTrees.logic.Statement;
 
+/**
+ * One line of a formal F proof in memory
+ */
 public class ProofLine {
+
+	//member variables
+	private Statement statement;
+	private String rule;
+	private int subproofLevel; //starts at 0
+	private Vector<ProofLine> referencedLines;
+	private int lineNumber;
+	private boolean premise = false;
 	
-	//constructor
-	public ProofLine(){
-		referencedLines = new Vector<ProofLine>();
-	}
-		
+	/** SI stands for step info, see Fitch_File_Documentation.txt */
+	private int fitchSI = 13; //Fitch memory index for supporting rules, starts at 13
+	/** SS stands for step index, see Fitch_File_Documentation.txt */
+	private Vector<Integer> fitchSS; //Fitch branch index for supporting rules
+	
+	private boolean isStartofSubproof = false;
+	private boolean isEndofSubproof = false;
+	
+	private FitchProof encompassingProof;
+	
 	/**
-	 * 
+	 * Constructor for a proof line
 	 * @param statement
 	 * @param encompassingProof
 	 * @param subproofInstruction 0: maintain subproof level, 1: open new subproof, 2: close current subproof (after inserting current line)
-	 * @param rule
+	 * @param rule use the RULE and LEMMA constants in FitchProof.java
 	 */
 	public ProofLine(Statement statement, FitchProof encompassingProof, int subproofInstruction, String rule){
 		setEncompassingProof(encompassingProof);
@@ -67,7 +83,7 @@ public class ProofLine {
 		}
 		
 		referencedLines = new Vector<ProofLine>();
-//		fitchSS = new Vector<Integer>();
+		//fitchSS is initialized in setFitchSS()
 		
 		setLineNumber(encompassingProof.getLength()+1);
 		
@@ -82,30 +98,22 @@ public class ProofLine {
 		}
 		return false;
 	}
-	
-	
-	public ProofLine(Statement statement, int subproofLevelLevel, int lineNumber) {
-		referencedLines = new Vector<ProofLine>();
-		setStatement(statement);
-		//set rule
-		
-		setSubproofLevel(subproofLevel);
-	}
 
 	public Statement getStatement() {
 		return statement;
 	}
 	
+	/**
+	 * @return the line's statement in a form ready to print to a Fitch file
+	 */
 	public String getStatementFitchString() {
 		String rtn = statement.toString();
-//		System.out.println("Before: "+rtn);
 		rtn = rtn.replace('¬', '~');
 		rtn = rtn.replace('∧', '&');
 		rtn = rtn.replace('∨', '|');
 		rtn = rtn.replace('→', '$');
 		rtn = rtn.replace('↔', '%');
 		rtn = rtn.replace('⊥', '^');
-//		System.out.println("after: "+rtn);
 		return rtn;
 	}
 
@@ -165,8 +173,6 @@ public class ProofLine {
 		this.encompassingProof = encompassingProof;
 	}
 
-
-
 	public boolean isStartofSubproof() {
 		return isStartofSubproof;
 	}
@@ -174,8 +180,6 @@ public class ProofLine {
 	public void setStartofSubproof(boolean isStartofSubproof) {
 		this.isStartofSubproof = isStartofSubproof;
 	}
-
-
 
 	public boolean isEndofSubproof() {
 		return isEndofSubproof;
@@ -185,18 +189,26 @@ public class ProofLine {
 		this.isEndofSubproof = isEndofSubproof;
 	}
 
-
-
 	public Vector<Integer> getFitchSS() {
 		return fitchSS;
 	}
 	
+	/** 
+	 * @return An SS reference to this line's encompassing subproof
+	 */
 	public Vector<Integer> getFitchSSParentSubproof(){
 		Vector<Integer> fitchSSParent = new Vector<Integer>(fitchSS);
 		fitchSSParent.remove(fitchSSParent.size()-1);
 		return fitchSSParent;
 	}
 
+	/**
+	 * This function is called when a line uses and entire subproof as support.
+	 * Note that a line that does reference an entire subproof as support will always
+	 * be exactly one subproof level above it (e.g. neg intro, disj elim).
+	 * @param referencerSubProofSize The subproof size of the line that uses this line as support
+	 * @return An SS reference to this line's encompassing subproof (String form)
+	 */
 	public String getFitchSSParentSubproofString(int referencerSubProofSize){
 		String str = "";
 		for(int i = 0; i < referencerSubProofSize; i++){
@@ -206,6 +218,9 @@ public class ProofLine {
 		return str;
 	}
 	
+	/**
+	 * @return The SS in string form.
+	 */
 	public String getFitchSS_String(){
 		String str = "";
 		for(int i = 0; i < fitchSS.size(); i++){
@@ -222,8 +237,6 @@ public class ProofLine {
 		this.fitchSS = new Vector<Integer>(fitchSS);
 	}
 
-
-
 	public int getFitchSI() {
 		return fitchSI;
 	}
@@ -232,27 +245,4 @@ public class ProofLine {
 		this.fitchSI = fitchSI;
 	}
 
-
-
-	//member variables
-	private Statement statement;
-	private String rule;
-	private int subproofLevel; //starts at 0
-	//TODO is this okay? ProofLine treated as pointer??
-	private Vector<ProofLine> referencedLines;
-	private int lineNumber;
-	private boolean premise = false;
-	
-	//SI stands for support index?
-	private int fitchSI = 13; //Fitch memory index for supporting rules, starts at 13
-	//SS stands for support subproof?
-	private Vector<Integer> fitchSS; //Fitch branch index for supporting rules
-	
-	private boolean isStartofSubproof = false;
-	private boolean isEndofSubproof = false;
-	
-	private FitchProof encompassingProof;
-	
-	//TODO should write some nice print function that puts it into text file
-	//TODO ask simon what his file type is, see if it's easy enough to print into
 }

@@ -1,0 +1,97 @@
+===================Fitch File Format===================
+
+Line 1: Fitch Version
+Line 2: Operating System and Version
+	-see FitchFileManager.assembleFitchOSLine() for more
+Line 3: “FchF”
+Line 4: Time Stamps 
+	-can be blank on mac, but NOT on windows
+	-use another Fitch file's timestamps made in the Fitch software for a placeholder
+Line 5: Fitch File Format (“newFormat”)
+Line 6: Proof Data
+	-Class Calls -- S.R.O.U.B. and F.
+	-Stored Checksum c = ASCII sum of all characters lines 1-6 (NO new lines)
+	-see below for more details
+Line 7: s = some number, "123" seems to always works
+
+
+===================Storing Proofs in Fitch (Line 6)===================
+Line 6 stores the actual proof, and can be decomposed into the following:
+S: Step info
+	-this contains the line's text
+R: Rule
+	-there are different string constants for different rules
+O: Object (class info)
+	-I ran into no trouble using a constant for this line
+U: Support
+	-when referencing another line, it uses two quantities:
+		-ss: line's subproof level, starts off at 0, new lines increment by one, new subproofs increment by 1,
+			 adsd a . and start at 0 again. (e.g. first line of proof is 0, second line is 1, if the third line
+			 starts a subproof, it's ss would be 2.0, if the fourth line continues the subproof, 2.1, if the fifth
+			 line is outside the subproof, the ss continues 3).\
+			 
+		-si: this is the memory index. This quantity is especially hard to work with an appears variable. Thankfully,
+		     it seems one can set it to a constant (I used 13) and not run into issues. That being said, here is what
+		     I've discovered about it:
+		     	-The first proof line starts at si 13.
+		     	-Adding a line increments the si by 8.
+		     	-Adding a line that is the start of a new subproof increments si by the line (8) plus another
+		     	 9 for the start of a new subproof, for a total increment of 17.
+B: “b()”
+	-unsure of this line's use, always just seems to be "b()"
+
+When opening a new subproof… 
+F: List of additional proof lines (S.R.O.U.B.)
+
+See FitchFileManager.java for more details, code and string constants for S.R.O.U.B. and F.
+
+
+===================Checksum===================
+Checksum (end of Line 6, c = ...) is checked when Fitch opens a file and one method Fitch uses to determine
+if a file is corrupt or not. Once again, it is the ASCII sum of each character on Lines 1-6, without new lines.
+It is appended to the end of line 6 once computed. Fitch logs output the expected checksum when a corrupt proof
+is opened, which was helpful in determining the checksum algorithm.
+
+===================Pretty Fitch===================
+Note: Line 6 of Fitch files can actually formatted using new lines and indents, but these indents must
+  be accounted for in the checksum. One could output a "Pretty Fitch" file with this formatting.
+  
+
+===================Tools for Exploring Fitch===================
+Two big tools used for exploring Fitch are decompilers and loggers. To decompile Fitch's source,
+ download JD-GUI (http://jd.benow.ca/) and open the Fitch.jar file. The decompiled source can be exported
+ and loaded into Eclipse (import the Fitch.jar, then attached source).
+ 
+Once the source is attached in Eclipse, Fitch can be run with logs redirected to standard output
+(stdout, i.e. console). First, open up run configurations and set the main class of your project
+to be Fitch's main class (openproof.fitch.Fitch). Next, create a file in the project's src folder
+entitled log4j.properties, and put the code below into it. Fitch's logs are very informative and
+were an essential tool in learning the inner workings of Fitch.
+
+
+===================Redirecting Fitch's logs to stdout: src/log4j.properties===================
+#put this file in src/log4j.properties after importing the Fitch.jar into an eclipse project
+log4j.rootLogger=debug, stdout, R
+
+log4j.appender.stdout=org.apache.log4j.ConsoleAppender
+log4j.appender.stdout.layout=org.apache.log4j.PatternLayout
+
+# Pattern to output the caller's file name and line number.
+log4j.appender.stdout.layout.ConversionPattern=%5p [%t] (%F:%L) - %m%n
+
+log4j.appender.R=org.apache.log4j.RollingFileAppender
+log4j.appender.R.File=example.log
+
+log4j.appender.R.MaxFileSize=100KB
+# Keep one backup file
+log4j.appender.R.MaxBackupIndex=1
+
+log4j.appender.R.layout=org.apache.log4j.PatternLayout
+log4j.appender.R.layout.ConversionPattern=%p %t %c - %m%n
+
+===================Lemmas in Fitch===================
+In Fitch when a lemma is introduced, the entire Lemma's proof is copied into the file. The copy begins at line 6
+after the first portion of text "=openproof.zen.Openproof{" and continues until that curly brace ends. This is 
+placed in the rule portion of a line, in the "p=...;" slot.
+
+Thankfully, Lemmas are not altered when they are copied in. So, P->Q and (A^B)->(C^D) use the same cond lemma.

@@ -32,6 +32,9 @@ import perl.aaron.TruthTrees.BranchLine;
 import perl.aaron.TruthTrees.logic.Negation;
 import perl.aaron.TruthTrees.logic.Statement;
 
+/** 
+ * Memory representation of a formal F proof.
+ */
 public class FitchProof {
 	
 	//member variables
@@ -77,6 +80,11 @@ public class FitchProof {
 		return pl;
 	}
 	
+	/**
+	 * Assume the negation of the conclusion
+	 * @param bLine truth tree branch line
+	 * @return proof line
+	 */
 	public ProofLine initializeProofByContradiction(BranchLine bLine) {
 		ProofLine pl = new ProofLine(bLine.getStatement(), this, 1, "");
 		pl.setStartofSubproof(true);
@@ -100,22 +108,6 @@ public class FitchProof {
 		return getProof().get(i);
 	}
 
-
-//	public ProofLine addContradiction(BranchLine bLine, int recursionLevel, HashMap<BranchLine, ProofLine> conversionMap) {
-//		ProofLine pl = new ProofLine(bLine, recursionLevel, proof.size()+1);
-//		
-//		//set rule
-//		pl.setRule(RULE_CONTR_INTRO);
-//		
-//		//add references
-//		for(BranchLine contradictionLine : bLine.getSelectedLines()){
-//			pl.addReferencedLine(conversionMap.get(contradictionLine));
-//		}
-//		
-//		proof.add(pl);
-//		return pl;
-//	}
-
 	/** 
 	 * Get the Fitch proof's current subproof level
 	 * @return the last ProofLine's subproof level
@@ -133,7 +125,9 @@ public class FitchProof {
 		return proof.size();
 	}
 	
-	//Organized fitch print
+	/**
+	 * A nice organized print of a formal F proof in memory.
+	 */
 	public void printProof(){
 		System.out.println("=========================");
 		System.out.println("=======FITCH PRINT=======");

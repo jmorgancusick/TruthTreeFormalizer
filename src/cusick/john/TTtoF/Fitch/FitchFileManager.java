@@ -40,9 +40,17 @@ import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
+/**
+ * This class outputs a formal F proof in memory to a file
+ */
 public class FitchFileManager {
 	private static final String EXTENSION = "prf";
 	
+	/** 
+	 * GUI call to save file
+	 * @param parent panel (GUI)
+	 * @param proof F proof in memory
+	 */
 	public void saveFile(JPanel parent, FitchProof proof)
 	{
 		final JFileChooser fileChooser = new JFileChooser();
@@ -63,7 +71,10 @@ public class FitchFileManager {
 		}
 	}
 	
-	
+	/**
+	 * Assemble line 2 of Fith file
+	 * @return the Fitch OS string
+	 */
 	private String assembleFitchOSLine(){
 		String osType = "Unknown:";
 	    if (OS_NAME.toLowerCase().startsWith("mac os x")) {
@@ -76,6 +87,11 @@ public class FitchFileManager {
 	    return osType+OS_NAME+OS_VERSION;
 	}
 		
+	/**
+	 * Sum the ASCII values of a string, used for checksum
+	 * @param str
+	 * @return sum of ASCII values of each character in str
+	 */
 	private long sumCharAsciiValues(String str){
 		//calculate the check sum for each line
 		long sum = 0;
@@ -85,6 +101,12 @@ public class FitchFileManager {
 		return sum;
 	}
 	
+	/** 
+	 * Ouptut an entire Fitch file, start to finish
+	 * @param file output Fitch file
+	 * @param proof F proof in memory
+	 * @return
+	 */
 	public int outputFitchFile(File file, FitchProof proof){
 		
 		//open filename
@@ -97,12 +119,6 @@ public class FitchFileManager {
 			System.err.println("Could no open output file!");
 			return 1;
 		}
-		
-		
-		
-		//Vector<String> line;
-		//line.add(""); //blank, just to align indexes and lines
- 		
 		
 		//Fitch version number
 		//TODO: is there a way to find Fitch's current version number?
@@ -148,7 +164,13 @@ public class FitchFileManager {
 		return 0;
 	}
 	
-	//TODO use string builder
+	//TODO maybe use string builder
+	/**
+	 * Output a F proof in memory to a Fitch file
+	 * @param writer output file
+	 * @param proof formal F proof in memory
+	 * @return partial checksum
+	 */
 	private Long printProof(PrintWriter writer, FitchProof proof) {
 		
 		proof.setFitchIndices();
@@ -156,6 +178,7 @@ public class FitchFileManager {
 		Long runningCheckSum = (long) 0;
 		Stack<String> closingString = new Stack<String>();
 		
+		//opening lines of proof
 		runningCheckSum += OutputAndAdd(writer, PROOF_OPENING_LINE, true, closingString);
 		runningCheckSum += OutputAndAdd(writer, PROOF_DRIVER, true, closingString);
 		
@@ -165,13 +188,14 @@ public class FitchFileManager {
 		runningCheckSum += recursiveProofPrinter(writer, proof, closingString, 0);
 		System.out.println("checksum AFTER RECURSE: "+runningCheckSum);
 		
-		//TODO NEED TO CHANGE TO ACCEPT GOALS
-		//TODO take closingString as arg and just update in function
+		//TODO maybe program in goals
+		//closing lines of proof
 		runningCheckSum += OutputAndAdd(writer, PROOF_GOAL, false, closingString);
 		runningCheckSum += OutputAndAdd(writer, PROOF_A, false, closingString);
 
 		System.out.println("checksum AFTER LAST: "+runningCheckSum);
 		
+		//pop the rest off of closing branches, should just be the final two } from the opening lines
 		while(closingString.empty() == false){
 			System.out.println("pops at end (should be 2)");
 			runningCheckSum += CloseBranches(1, writer, closingString);
@@ -180,6 +204,14 @@ public class FitchFileManager {
 		return runningCheckSum;
 	}
 	
+	/**
+	 * Recursively output lines from a FitchProof file
+	 * @param writer output file
+	 * @param proof formal F proof in memory
+	 * @param closingString stack of closing strings
+	 * @param lineIndex proof line index
+	 * @return partial checksum
+	 */
 	private Long recursiveProofPrinter(PrintWriter writer, FitchProof proof, Stack<String> closingString, int lineIndex) {
 		Long runningCheckSum = (long) 0;
 		if(lineIndex >= proof.getLength()){
@@ -226,7 +258,6 @@ public class FitchFileManager {
 			//F -- recursive call
 			runningCheckSum += OutputAndAdd(writer, PROOF_F, true, closingString);
 			
-			//TODO dont forget about commas!
 		}
 		
 		// proofLine	
@@ -275,19 +306,16 @@ public class FitchFileManager {
 		runningCheckSum += recursiveProofPrinter(writer, proof, closingString, lineIndex+1); //recursive call
 		return runningCheckSum;
 		
-//		if(lineIndex == 0 || proof.get(lineIndex).isStartofSubproof()){
-//			CloseBranches(1, writer, runningCheckSum, closingString); //close subproof/proof start F branch
-//		}
-		//TODO call this in driver
-//		if(lineIndex == 0){ //only close when back at top level recursion
-//			System.out.println("closing proof starter");
-//			CloseBranches(1, writer,runningCheckSum, closingString); //closes PROOF_STARTER
-//		}
-		
 	}
 	
 
-
+	/**
+	 * Output a Fitch lemma, this references the lemmas stored in cusick.john.TTtoF.FunamentalTruthTreeLemmas
+	 * @param writer output file
+	 * @param rule lemma to output
+	 * @param closingString stack of closing strings
+	 * @return partial checksum
+	 */
 	private Long OutputLemma(PrintWriter writer, String rule, Stack<String> closingString) {
 		System.out.println("starting lemma output");
 		//rule should correspond to the correct lemma file (without the .prf)
@@ -335,39 +363,24 @@ public class FitchFileManager {
 			scan.close();
 			
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		System.out.println("test4");
 		//close final branch of lemma rule
 		runningCheckSum += CloseBranches(1, writer, closingString);
 		
-		
-//		switch(rule){
-//			case FitchProof.LEMMA_DEMORGAN1:
-//				runningCheckSum += PROOF_LEMMA_CHECKSUM_DEMORGAN1;
-//				break;
-//			case FitchProof.LEMMA_DEMORGAN2:
-//				runningCheckSum += PROOF_LEMMA_CHECKSUM_DEMORGAN2;
-//				break;
-//			case FitchProof.LEMMA_COND:
-//				runningCheckSum += PROOF_LEMMA_CHECKSUM_COND;
-//				break;
-//			case FitchProof.LEMMA_NEG_COND:
-//				runningCheckSum += PROOF_LEMMA_CHECKSUM_NEG_COND;
-//				break;
-//			case FitchProof.LEMMA_BICOND:
-//				runningCheckSum += PROOF_LEMMA_CHECKSUM_BICOND;
-//				break;
-//			case FitchProof.LEMMA_NEG_BICOND:
-//				runningCheckSum += PROOF_LEMMA_CHECKSUM_NEG_BICOND;
-//				break;
-//		}
-		
 		return runningCheckSum;
 	}
 
-
+	/**
+	 * 
+	 * @param writer output file
+	 * @param proof
+	 * @param lineIndex
+	 * @param closingString Stack containing all closing strings still needed to output (typically these are
+	 *        closing parenthesis and curly braces).
+	 * @return partial checksum
+	 */
 	private Long OutputSupportSteps(PrintWriter writer, FitchProof proof, int lineIndex, Stack<String> closingString) {
 		Long runningCheckSum = (long) 0;
 		Vector<Integer> currLineSS = proof.get(lineIndex).getFitchSS();
@@ -382,7 +395,6 @@ public class FitchFileManager {
 			ProofLine lineRef = proof.get(lineIndex).getReferencedLines().get(i);
 			//if the reference line is a line in a deeper subproof (SS size is greater)
 			//then this line MUST reference the whole subproof
-//			Vector<Integer> referencedSS = new Vector<Integer>();
 			System.out.println("Line: "+proof.get(lineIndex).getLineNumber()+". "+proof.get(lineIndex).getStatementFitchString());
 			System.out.println("ref line: "+lineRef.getLineNumber()+". "+lineRef.getStatementFitchString());
 			System.out.println("currLineSS: "+currLineSS);
@@ -422,9 +434,7 @@ public class FitchFileManager {
 			runningCheckSum += OutputAndAdd(writer, outputSS, false, closingString);
 			
 			//close support header
-			runningCheckSum += CloseBranches(1, writer, closingString); // close part of support header, to get the SS
-			
-			
+			runningCheckSum += CloseBranches(1, writer, closingString); // close part of support header, to get the SS	
 			
 			//DEBUG OUTPUT
 			System.out.println("Added SI for "+proof.get(lineIndex).getLineNumber()+". "+proof.get(lineIndex).getStatementFitchString()+ " --> "+lineRef.getLineNumber()+". "+lineRef.getStatementFitchString()+": "+outputSI);
@@ -439,7 +449,12 @@ public class FitchFileManager {
 		return runningCheckSum;
 	}
 
-
+	/**
+	 *
+	 * @param proof
+	 * @param lineIndex proof line index to use
+	 * @return Fitch R line dependent on the proof line's rule
+	 */
 	private String getFitchRuleString(FitchProof proof, int lineIndex) {
 		//String rtn = "";
 		if(proof.get(lineIndex).isPremise()){
@@ -465,7 +480,13 @@ public class FitchFileManager {
 		}
 	}
 
-
+	/** 
+	 * Pop, print and add numCloses number of strings from the closingString stack.
+	 * @param numCloses number of branches to close (pops to perform)
+	 * @param writer output file
+	 * @param closingString stack of closing strings
+	 * @return
+	 */
 	private Long CloseBranches(int numCloses, PrintWriter writer, Stack<String> closingString){
 		Long runningCheckSum = (long) 0;
 		for(int i = 0; i < numCloses; i++){
@@ -477,18 +498,21 @@ public class FitchFileManager {
 		return runningCheckSum;
 	}
 
+	/**
+	 * Output a string to the Fitch file and return the partial checksum (ASCII sum of it's characters)
+	 * @param writer writer to output file
+	 * @param str what to write
+	 * @param split true for DELIM, false for no DELIM. If split is true, the string will be split up
+	 *        based on DELIM. The first section is printed and added, with the rest being pushed
+	 *        onto the closingString stack
+	 * @param closingString Stack containing all closing strings still needed to output (typically these are
+	 *        closing parenthesis and curly braces).
+	 * @return partial checksum (sum of str's characters' ASCII values)
+	 */
 	private Long OutputAndAdd(PrintWriter writer, String str, boolean split, Stack<String> closingString){
 		String outputString = str;
 		if(split == true){
 			String[] a = str.split(Pattern.quote(DELIM));
-//			if (a.length == 2){
-//				outputString = a[0];
-//				closingString.push(a[1]);
-//			}
-//			else{
-//				System.err.println("Havent handled split case yet");
-//				return (long) 0;
-//			}
 			outputString = a[0];
 			//add to stack in reverse order so they are popped in the correct order
 			for(int i = a.length - 1; i > 0 ; i--){

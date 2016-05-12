@@ -80,6 +80,11 @@ public class ConverterPanel extends JPanel
     private JTextArea log;
     private JFileChooser fc;
 
+    /**
+     * Panel for the Truth Tree Formalizer GUI, altered from a Oracle boiler plate, FileChooserDemo:
+     * https://docs.oracle.com/javase/tutorial/displayCode.html?code=https://docs.oracle.com/javase/tutorial/uiswing/examples/components/FileChooserDemoProject/src/components/FileChooserDemo.java
+     * 
+     */
     public ConverterPanel() {
         super(new BorderLayout());
 
@@ -210,7 +215,7 @@ public class ConverterPanel extends JPanel
                 fitchFile = fc.getSelectedFile();
                 //This is where a real application would save the file.
                 
-                log.append("Saving: " + fitchFile.getName() + "." + FITCH_EXTENSION + newline);
+                log.append("Saving: " + fitchFile.getName() /*+ "." + FITCH_EXTENSION */+ newline);
             } else {
                 fitchFile = null;
                 

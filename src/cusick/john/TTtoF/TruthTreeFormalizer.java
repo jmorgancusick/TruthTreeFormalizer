@@ -32,10 +32,11 @@ import javax.swing.UIManager;
 
 import cusick.john.TTtoF.graphics.ConverterPanel;
 
+/** 
+ * Contains main that launches GUI
+ */
 public class TruthTreeFormalizer {
 
-	
-	
     public static void main(String[] args) {
         //Schedule a job for the event dispatch thread:
         //creating and showing this application's GUI.
