@@ -1,0 +1,3 @@
+Would love to transform this project into a proof system / file type translator. Import Fitch files and convert
+to truth trees. Convert Fitch files to formal xml file types or pretty Fitch files (indented). This could be
+expanded to handle a lot of different proof systems.
